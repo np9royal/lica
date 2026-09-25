@@ -49,9 +49,9 @@ dev = [
 lica = "lica.cli:app"
 
 [project.urls]
-Homepage = "https://github.com/icona/lica"
-Repository = "https://github.com/icona/lica"
-Issues = "https://github.com/icona/lica/issues"
+Homepage = "https://github.com/np9royal/lica"
+Repository = "https://github.com/np9royal/lica"
+Issues = "https://github.com/np9royal/lica/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/lica"]
