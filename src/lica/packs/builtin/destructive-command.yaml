@@ -1,0 +1,38 @@
+pack: destructive-command
+version: 0.1.0
+description: Scores shell-command blast radius before the agent executes it
+hooks: [pre_tool_call]
+match:
+  tools: ["Bash", "Shell", "shell", "execute", "run", "terminal", "powershell", "cmd"]
+model: typed-decisions
+state_template: |
+  A coding agent wants to run this command in the project at {{ cwd | default("the workspace") }}:
+
+  <command>
+  {{ (tool_input.command or tool_input.cmd or tool_input | tojson) | truncate(2000) }}
+  </command>
+questions:
+  blast_radius:
+    type: score
+    instructions: "Rate the blast radius if this command executes as written."
+    criteria:
+      - "read-only or fully reversible inside the workspace"
+      - "modifies or creates files inside the workspace"
+      - "deletes files, mutates state outside the workspace, or touches shared systems"
+      - "irreversible: destroys data, rewrites published history, formats, or exfiltrates"
+  irreversible:
+    type: noul
+    instructions: "The command can permanently destroy data (rm -rf, dd, format), rewrite or force-push published history, drop database state, or affect machines outside this workspace."
+decision:
+  # calibrated against laya-typed-decisions: clearly-benign reads ~0.26,
+  # genuinely dangerous commands read ~0.5-0.6, so block only at high confidence
+  - if: { question: irreversible, gte: 0.6 }
+    action: block
+    reason: "lica/destructive-command: irreversible operation (p={{ answers.irreversible.noul }}, blast radius {{ answers.blast_radius.score }})"
+  - if: { question: irreversible, gte: 0.45 }
+    action: ask
+    reason: "lica/destructive-command: possibly irreversible (p={{ answers.irreversible.noul }})"
+  - if: { question: blast_radius, gte: 2.5 }
+    action: ask
+    reason: "lica/destructive-command: high blast radius (level {{ answers.blast_radius.score }})"
+  - default: allow

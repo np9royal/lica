@@ -1,0 +1,10 @@
+lica
+Copyright 2026 lica contributors
+
+This product includes software developed by the lica contributors
+(https://github.com/icona/lica).
+
+lica builds on the Laya decision model family developed by Convai
+Innovations and released under the Apache License 2.0. Laya model
+weights are downloaded from the Hugging Face Hub at runtime and are
+not vendored in this repository.

@@ -1,0 +1,28 @@
+pack: verbose-output
+version: 0.1.0
+description: Triage oversized tool results — keep, or flag as context noise
+hooks: [post_tool_call]
+match:
+  tools: ["Bash", "Read", "Grep", "mcp__*"]
+model: typed-decisions
+state_template: |
+  A coding agent received this tool result from "{{ tool_name }}". Judge whether
+  keeping all of it in context is worth the tokens.
+
+  <tool-output>
+  {{ tool_output | truncate(6000) }}
+  </tool-output>
+questions:
+  signal:
+    type: score
+    instructions: "How much of this output is directly relevant to the agent's likely task? (0 = all signal, 3 = mostly noise: logs, boilerplate, stack spam)"
+    criteria:
+      - "all relevant"
+      - "mostly relevant with some noise"
+      - "mostly boilerplate or repetitive"
+      - "pure noise — truncating loses nothing"
+decision:
+  - if: { question: signal, gte: 2.5 }
+    action: log
+    reason: "lica/verbose-output: mostly noise (level {{ answers.signal.score }}) — consider truncating"
+  - default: allow
