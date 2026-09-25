@@ -13,6 +13,10 @@ pytest -m slow        # additionally run the real-model CPU smoke test
 ruff check . && ruff format --check .
 ```
 
+CI config lives at the repo root as `ci.yml` — move it to
+`.github/workflows/ci.yml` to enable GitHub Actions (the web UI's "set up a
+workflow yourself" flow accepts it directly).
+
 ## Writing a decision pack
 
 Packs are YAML and live in `src/lica/packs/builtin/` (bundled) or
